@@ -1,0 +1,80 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:ui="http://java.sun.com/jsf/facelets">
+<f:view contentType="text/html">
+	<h:head>
+	    <ui:param name="path" value="#{request.getContextPath()}"/>
+		<title><ui:insert name="pageTitle">CtrlSolution</ui:insert></title>
+		<f:event listener="#{homeViewController.verificarUsuario()}"
+			type="preRenderView" />			
+		<link href="#{path}/resources/css/ctrlsolutions.css" rel="stylesheet" type="text/css" />	
+		<h:outputScript library="js" name="validator.js" />	
+	</h:head>
+
+	<h:body onload="#{homeViewController.generarMenu()}">
+
+		<p:layout fullPage="true">
+
+
+			<p:layoutUnit position="south" size="25">
+
+			</p:layoutUnit>
+
+			<p:layoutUnit position="west" size="250">
+				<h:form id="menu">
+					<p:graphicImage width="100" height="85" position="center"
+						value="#{FacesContext.getCurrentInstance}/resources/images/logoHeader.jpg" />
+					<h:outputText value="CtrlSolution"
+						style="text-align: center;
+  	color: #5b6574;
+  	font-size: 24px;
+  	padding: 20px 0 20px 0;"></h:outputText>
+
+					<p:panelMenu style="width:242px"
+						model="#{homeViewController.menuModel}">
+					</p:panelMenu>
+				</h:form>
+			</p:layoutUnit>
+
+
+
+			<p:layoutUnit position="center">
+			
+				<f:facet name="header">
+					<table style="width: 100%">
+					
+						<tr>
+							<td style="text-align: left; width: 30%"><h:outputLabel
+									value="Gestión Órdenes de Trabajo "></h:outputLabel></td>
+							<td style="text-align: center; width: 40%"></td>
+							<td style="text-align: right; width: 30%"><h:outputLabel
+									value="Usuario: "></h:outputLabel> <h:outputLabel
+									value="#{homeViewController.usuario.persona.nombre} #{homeViewController.usuario.persona.apellido}  "></h:outputLabel>
+								<p:commandButton icon="fa fa-cog" /> <p:commandButton
+									icon="fa fa-power-off" title="Cerrar Cesion"
+									actionListener="#{homeViewController.cerrarSesion}"
+									action="/login?faces-redirect=true" /></td>
+						</tr>
+					</table>
+				</f:facet>
+
+
+				<div>
+
+					<ui:insert name="content" />
+				</div>
+
+
+			</p:layoutUnit>
+		</p:layout>
+
+	</h:body>
+
+</f:view>
+
+
+</html>

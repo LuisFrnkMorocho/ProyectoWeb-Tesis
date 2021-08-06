@@ -1,0 +1,91 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="content">
+	<h:body onload="#{reporteOrdenTrabajoViewController.doInit()}">
+		<h:form id="formtipoServicio">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				
+					<p:commandButton title="Refrescar" icon="fa fa-refresh" value="Restaurar"
+						rendered="#{!reporteOrdenTrabajoViewController.pnlSearchOrViewData}" />
+					 <p:toolbarGroup name="right">
+					<p:menuButton value="Exportar">
+					<p:menuitem value="Excel" ajax="false" icon="fa fa-file-excel-o">
+					<p:dataExporter type="xls" target="tblHistorial" encoding="ISO-8859-1"
+								fileName="HistorialOrdenes" />
+					</p:menuitem>
+					<p:menuitem value="PDF" ajax="false" icon="fa fa-file-pdf-o">
+					<p:dataExporter type="pdf" target="tblHistorial" encoding="ISO-8859-1"
+								fileName="HistorialOrdenes" 
+								preProcessor="#{reporteOrdenTrabajoViewController.preProcessPDF}"/>
+					</p:menuitem>                    
+                </p:menuButton>	
+                </p:toolbarGroup>				
+			
+			</p:toolbar>
+			<p:panel>
+			
+			<p:dataTable var="ordenTrabajo" rowIndexVar="row"
+				rendered="#{!reporteOrdenTrabajoViewController.pnlSearchOrViewData}"
+				value="#{reporteOrdenTrabajoViewController.listOrdenTrabajo}" rows="10"
+				widgetVar="wdttipoServicio" id="tblHistorial"
+				emptyMessage="No se encontraron registros">
+				<f:facet name="header">
+					<h:outputLabel value="Reporte Orden de Trabajo"></h:outputLabel>
+				</f:facet>
+				<p:column width="15" headerText="#" style="text-align:right;">
+					<h:outputLabel value="#{row + 1}" />
+				</p:column>
+				
+				<p:column headerText="C&#243;digo"
+					style="text-align:right;">
+					<h:outputLabel value="#{ordenTrabajo.codOrdenTrabajo}"></h:outputLabel>
+				</p:column>
+				<p:column  headerText="Estado">
+					<h:outputLabel value="#{ordenTrabajo.estado}"></h:outputLabel>
+				</p:column>
+				
+				<p:column headerText="Fecha Registro"
+					style="text-align:right;">
+					<h:outputLabel value="#{ordenTrabajo.fechaRegistro}">
+					<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+					</h:outputLabel>
+				</p:column>
+				
+				
+				<p:column headerText="Identificación">
+					<h:outputLabel
+						value="#{ordenTrabajo.cliente.persona.identificacion}"></h:outputLabel>
+				</p:column>
+				
+				<p:column headerText="Apellido">
+					<h:outputLabel value="#{ordenTrabajo.cliente.persona.apellido}"></h:outputLabel>
+				</p:column>
+				
+				<p:column headerText="Nombre">
+					<h:outputLabel value="#{ordenTrabajo.cliente.persona.nombre}"></h:outputLabel>
+				</p:column>
+								
+				<p:column headerText="Teléfono">
+					<h:outputLabel value="#{ordenTrabajo.cliente.persona.telefono}"></h:outputLabel>
+				</p:column>
+				
+				<p:column headerText="Descripci&#243;n">
+					<h:outputLabel value="#{ordenTrabajo.observacion}"></h:outputLabel>
+				</p:column>
+
+
+			</p:dataTable>
+			
+			</p:panel>
+		</h:form>
+		</h:body>
+	</ui:define>
+</ui:composition>

@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	<ui:define name="content">
+	<h:body onload="#{tipoServicioViewController.doInit()}">
+		<h:form id="formtipoServicio">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				<p:toolbarGroup>
+					<p:commandButton title="Restaurar" icon="fa fa-refresh" value="Restaurar"
+						rendered="#{!tipoServicioViewController.pnlSearchOrViewData}" />
+					<p:commandButton title="Nuevo" icon="fa fa-file-o" value="Nuevo"
+						rendered="#{!tipoServicioViewController.pnlSearchOrViewData}"
+						actionListener="#{tipoServicioViewController.agregar}"
+						update="formtipoServicio" />
+					<p:commandButton icon="fa fa-save" title="Guardar" value="Guardar"
+						actionListener="#{tipoServicioViewController.save}"
+						update="formtipoServicio"
+						rendered="#{tipoServicioViewController.pnlSearchOrViewData and tipoServicioViewController.accion eq 'NEW'}"></p:commandButton>
+					<p:commandButton icon="fa fa-pencil-square-o" title="Modificar" value="Modificar" 
+						actionListener="#{tipoServicioViewController.update}"
+						update="formtipoServicio"
+						rendered="#{tipoServicioViewController.pnlSearchOrViewData and tipoServicioViewController.accion eq 'EDIT'}"></p:commandButton>
+					<p:commandButton title="Regresar" icon="fa fa-reply" immediate="true" value="Regresar"
+						rendered="#{tipoServicioViewController.pnlSearchOrViewData}"
+						actionListener="#{tipoServicioViewController.search}"
+						update="formtipoServicio" />
+				</p:toolbarGroup>
+			</p:toolbar>
+			<p:dataTable var="tipoServicio" rowIndexVar="row"
+				rendered="#{!tipoServicioViewController.pnlSearchOrViewData}"
+				value="#{tipoServicioViewController.listTipoServicio}" rows="10"
+				widgetVar="wdttipoServicio" id="dttipoServicio"
+				emptyMessage="No se encontraron registros">
+				<f:facet name="header">
+					<h:outputLabel value="TIPO SERVICIO"></h:outputLabel>
+				</f:facet>
+				<p:column width="15" headerText="#" style="text-align:right;">
+					<h:outputLabel value="#{row + 1}" />
+				</p:column>
+				<p:column width="100" headerText="Acciones">
+					<p:commandButton icon="fa fa-pencil-square" title="Editar"
+						actionListener="#{tipoServicioViewController.editar}"
+						update="formtipoServicio">
+						<f:setPropertyActionListener value="#{tipoServicio}"
+							target="#{tipoServicioViewController.tipoServicio}" />
+					</p:commandButton>
+
+					<p:commandButton icon="fa fa-trash" title="Eliminar"
+						oncomplete="PF('dlgEliminar').show()">
+						<f:setPropertyActionListener value="#{tipoServicio}"
+							target="#{tipoServicioViewController.tipoServicio}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="120" headerText="C&#243;digo"
+					style="text-align:right;">
+					<h:outputLabel value="#{tipoServicio.codTipoServicio}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Descripci&#243;n">
+					<h:outputLabel value="#{tipoServicio.descripcion}"></h:outputLabel>
+				</p:column>
+			</p:dataTable>
+
+			<p:panel
+				rendered="#{tipoServicioViewController.pnlSearchOrViewData}">
+				<f:facet name="header">
+					<h:outputLabel
+						value="#{tipoServicioViewController.accion eq 'NEW' ? 'AGREGAR' : 'MODIFICAR' } TIPO SERVICIO"></h:outputLabel>
+				</f:facet>
+				<h:panelGrid id="pgtipoServicio" style="width=20%">
+					<p:row>
+						<p:column style="width=10%">
+							<h:outputLabel for="descripcion" value="Descripci&#243;n: * "></h:outputLabel>
+						</p:column>
+						<p:column style="width=10%">
+							<p:inputText id="descripcion" required="true" requiredMessage="Campo Obligatorio"
+								value="#{tipoServicioViewController.tipoServicio.descripcion}"></p:inputText>
+						</p:column>
+					</p:row>
+				</h:panelGrid>
+			</p:panel>
+
+			<p:confirmDialog id="dlgEliminar" width="400" widgetVar="dlgEliminar"
+				message=" ¿ Desea eliminar el Tipo Servicio seleccionado ?"
+				header="Eliminar Tipo Servicio" appendTo="@(body)">
+				<p:commandButton value="Confirmar"
+					actionListener="#{tipoServicioViewController.delete}"
+					oncomplete="PF('dlgEliminar').hide()" update="formtipoServicio"
+					process="@this" styleClass="ui-confirmdialog-yes"
+					icon="ui-icon-check" />
+				<p:commandButton value="Cancelar" type="button"
+					onclick="PF('dlgEliminar').hide()" styleClass="ui-confirmdialog-no"
+					icon="ui-icon-close" />
+			</p:confirmDialog>
+
+		</h:form>
+		</h:body>
+	</ui:define>
+</ui:composition>

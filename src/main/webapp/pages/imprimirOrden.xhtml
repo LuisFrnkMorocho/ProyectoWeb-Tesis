@@ -1,0 +1,66 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="content">
+		<h:form id="formtipoServicio">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				<p:toolbarGroup>
+					<p:commandButton title="Refrescar" icon="fa fa-refresh"
+						rendered="#{!reporteOrdenTrabajoViewController.pnlSearchOrViewData}" />
+					<p:commandButton title="Nuevo" icon="fa fa-file-o"
+						rendered="#{!reporteOrdenTrabajoViewController.pnlSearchOrViewData}"
+						actionListener="#{reporteOrdenTrabajoViewController.agregar}"
+						update="formtipoServicio" />
+					<p:commandButton icon="fa fa-save" title="Guardar"
+						actionListener="#{reporteOrdenTrabajoViewController.save}"
+						update="formtipoServicio"
+						rendered="#{reporteOrdenTrabajoViewController.pnlSearchOrViewData and reporteOrdenTrabajoViewController.accion eq 'NEW'}"></p:commandButton>
+					<p:commandButton icon="fa fa-pencil-square-o" title="Modificar"
+						actionListener="#{reporteOrdenTrabajoViewController.update}"
+						update="formtipoServicio"
+						rendered="#{reporteOrdenTrabajoViewController.pnlSearchOrViewData and reporteOrdenTrabajoViewController.accion eq 'EDIT'}"></p:commandButton>
+					<p:commandButton title="Regresar" icon="fa fa-reply" immediate="true"
+						rendered="#{reporteOrdenTrabajoViewController.pnlSearchOrViewData}"
+						actionListener="#{reporteOrdenTrabajoViewController.search}"
+						update="formtipoServicio" />
+				</p:toolbarGroup>
+			</p:toolbar>
+			<p:panel>
+			<h:outputLabel for="identificacion" value="Nro Orden: * "></h:outputLabel>
+					<p:inputNumber id="identificacion" required="true" maxlength="16"
+						requiredMessage="Campo Obligatorio" thousandSeparator=""
+						decimalSeparator="." decimalPlaces="0"
+						value="#{reporteOrdenTrabajoViewController.codOrdenTrabajoSelected}"></p:inputNumber>
+			
+			<p:commandButton value="Consultar" icon="fa fa-search" 						
+						actionListener="#{reporteOrdenTrabajoViewController.search}"
+						update="pnlDocumentViewer, messages" />
+			</p:panel>
+			<p:panel id="pnlDocumentViewer">
+			 <pe:documentViewer height="450" id="documentViewer" rendered="#{reporteOrdenTrabajoViewController.pnlSearchOrViewData and reporteOrdenTrabajoViewController.validarBusqueda and reporteOrdenTrabajoViewController.content!=null}"
+                                       value="#{reporteOrdenTrabajoViewController.content}"
+                                       download="ReporteOrdenTrabajo.pdf"></pe:documentViewer>
+            
+			
+			</p:panel>
+			
+			
+			
+			
+                   
+
+			
+
+			
+
+
+		</h:form>
+	</ui:define>
+</ui:composition>

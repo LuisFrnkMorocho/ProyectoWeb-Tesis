@@ -1,0 +1,104 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	<ui:define name="content">
+	<h:body onload="#{tipoDocumentoViewController.doInit()}">
+		<h:form id="formTipoDocumento">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				<p:toolbarGroup>
+					<p:commandButton title="Restaurar" icon="fa fa-refresh" value="Restaurar"
+						rendered="#{!tipoDocumentoViewController.pnlSearchOrViewData}" />
+					<p:commandButton title="Nuevo" icon="fa fa-file-o" value="Nuevo"
+						rendered="#{!tipoDocumentoViewController.pnlSearchOrViewData}"
+						actionListener="#{tipoDocumentoViewController.agregar}"
+						update="formTipoDocumento" />
+					<p:commandButton icon="fa fa-save" title="Guardar" value="Guardar"
+						actionListener="#{tipoDocumentoViewController.save}"
+						update="formTipoDocumento"
+						rendered="#{tipoDocumentoViewController.pnlSearchOrViewData and tipoDocumentoViewController.accion eq 'NEW'}"></p:commandButton>
+					<p:commandButton icon="fa fa-pencil-square-o" title="Modificar" value="Modificar"
+						actionListener="#{tipoDocumentoViewController.update}"
+						update="formTipoDocumento"
+						rendered="#{tipoDocumentoViewController.pnlSearchOrViewData and tipoDocumentoViewController.accion eq 'EDIT'}"></p:commandButton>
+					<p:commandButton title="Regresar" icon="fa fa-reply" immediate="true" value="Regresar"
+						rendered="#{tipoDocumentoViewController.pnlSearchOrViewData}"
+						actionListener="#{tipoDocumentoViewController.search}"
+						update="formTipoDocumento" />
+				</p:toolbarGroup>
+			</p:toolbar>
+			<p:dataTable var="tipoDocumento" rowIndexVar="row"
+				rendered="#{!tipoDocumentoViewController.pnlSearchOrViewData}"
+				value="#{tipoDocumentoViewController.listTipoDocumento}" rows="10"
+				widgetVar="wdtTipoDocumento" id="dtTipoDocumento"
+				emptyMessage="No se encontraron registros">
+				<f:facet name="header">
+					<h:outputLabel value="Tipo Documento"></h:outputLabel>
+				</f:facet>
+				<p:column width="15" headerText="#" style="text-align:right;">
+					<h:outputLabel value="#{row + 1}" />
+				</p:column>
+				<p:column width="100" headerText="Acciones">
+					<p:commandButton icon="fa fa-pencil-square" title="Editar"
+						actionListener="#{tipoDocumentoViewController.editar}"
+						update="formTipoDocumento">
+						<f:setPropertyActionListener value="#{tipoDocumento}"
+							target="#{tipoDocumentoViewController.tipoDocumento}" />
+					</p:commandButton>
+
+					<p:commandButton icon="fa fa-trash" title="Eliminar"
+						oncomplete="PF('dlgEliminar').show()">
+						<f:setPropertyActionListener value="#{tipoDocumento}"
+							target="#{tipoDocumentoViewController.tipoDocumento}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="120" headerText="C&#243;digo"
+					style="text-align:right;">
+					<h:outputLabel value="#{tipoDocumento.codTipoDocumento}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Descripci&#243;n">
+					<h:outputLabel value="#{tipoDocumento.descripcion}"></h:outputLabel>
+				</p:column>
+			</p:dataTable>
+
+			<p:panel
+				rendered="#{tipoDocumentoViewController.pnlSearchOrViewData}">
+				<f:facet name="header">
+					<h:outputLabel
+						value="#{tipoDocumentoViewController.accion eq 'NEW' ? 'AGREGAR' : 'MODIFICAR' } TIPO DOCUMENTO"></h:outputLabel>
+				</f:facet>
+				<h:panelGrid id="pgTipoDocumento" style="width=20%">
+					<p:row>
+						<p:column style="width=10%">
+							<h:outputLabel for="descripcion" value="Descripci&#243;n: * "></h:outputLabel>
+						</p:column>
+						<p:column style="width=10%">
+							<p:inputText id="descripcion" required="true" requiredMessage="Campo Obligatorio"
+								value="#{tipoDocumentoViewController.tipoDocumento.descripcion}"></p:inputText>
+						</p:column>
+					</p:row>
+				</h:panelGrid>
+			</p:panel>
+
+			<p:confirmDialog id="dlgEliminar" width="400" widgetVar="dlgEliminar"
+				message=" ¿ Desea eliminar el Tipo Documento seleccionado ?"
+				header="Eliminar Tipo Documento" appendTo="@(body)">
+				<p:commandButton value="Confirmar"
+					actionListener="#{tipoDocumentoViewController.delete}"
+					oncomplete="PF('dlgEliminar').hide()" update="formTipoDocumento"
+					process="@this" styleClass="ui-confirmdialog-yes"
+					icon="ui-icon-check" />
+				<p:commandButton value="Cancelar" type="button"
+					onclick="PF('dlgEliminar').hide()" styleClass="ui-confirmdialog-no"
+					icon="ui-icon-close" />
+			</p:confirmDialog>
+
+		</h:form>
+		</h:body>
+	</ui:define>
+</ui:composition>

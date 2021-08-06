@@ -1,0 +1,123 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	<ui:define name="content">
+	<h:body onload="#{empresaViewController.doInit()}">
+		<h:form id="formtipoServicio">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				<p:toolbarGroup>
+					<p:commandButton title="Restaurar" icon="fa fa-refresh" value="Restaurar"
+						rendered="#{!empresaViewController.pnlSearchOrViewData}" />
+					<p:commandButton title="Nuevo" icon="fa fa-file-o" value="Nuevo"
+						rendered="#{!empresaViewController.pnlSearchOrViewData}"
+						actionListener="#{empresaViewController.agregar}"
+						update="formtipoServicio" />
+					<p:commandButton icon="fa fa-save" title="Guardar" value="Guardar"
+						actionListener="#{empresaViewController.save}"
+						update="formtipoServicio"
+						rendered="#{empresaViewController.pnlSearchOrViewData and empresaViewController.accion eq 'NEW'}"></p:commandButton>
+					<p:commandButton icon="fa fa-pencil-square-o" title="Modificar" value="Modificar"
+						actionListener="#{empresaViewController.update}"
+						update="formtipoServicio"
+						rendered="#{empresaViewController.pnlSearchOrViewData and empresaViewController.accion eq 'EDIT'}"></p:commandButton>
+					<p:commandButton title="Regresar" icon="fa fa-reply" value="Regresar"
+						immediate="true"
+						rendered="#{empresaViewController.pnlSearchOrViewData}"
+						actionListener="#{empresaViewController.search}"
+						update="formtipoServicio" />
+				</p:toolbarGroup>
+			</p:toolbar>
+			<p:dataTable var="empresa" rowIndexVar="row"
+				rendered="#{!empresaViewController.pnlSearchOrViewData}"
+				value="#{empresaViewController.listEmpresa}" rows="10"
+				widgetVar="wdtEmpresa" id="dtEmpresa"
+				emptyMessage="No se encontraron registros">
+				<f:facet name="header">
+					<h:outputLabel value="Empresa"></h:outputLabel>
+				</f:facet>
+				<p:column width="15" headerText="#" style="text-align:right;">
+					<h:outputLabel value="#{row + 1}" />
+				</p:column>
+				<p:column width="100" headerText="Acciones">
+					<p:commandButton icon="fa fa-pencil-square" title="Editar"
+						actionListener="#{empresaViewController.editar}"
+						update="formtipoServicio">
+						<f:setPropertyActionListener value="#{empresa}"
+							target="#{empresaViewController.empresa}" />
+					</p:commandButton>
+
+					<p:commandButton icon="fa fa-trash" title="Eliminar"
+						oncomplete="PF('dlgEliminar').show()">
+						<f:setPropertyActionListener value="#{empresa}"
+							target="#{empresaViewController.empresa}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="120" headerText="C&#243;digo"
+					style="text-align:right;">
+					<h:outputLabel value="#{empresa.codEmpresa}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Nombre">
+					<h:outputLabel value="#{empresa.nombre}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="RUC">
+					<h:outputLabel value="#{empresa.ruc}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Teléfono">
+					<h:outputLabel value="#{empresa.telefono}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Dirección">
+					<h:outputLabel value="#{empresa.direccion}"></h:outputLabel>
+				</p:column>
+			</p:dataTable>
+
+			<p:panel rendered="#{empresaViewController.pnlSearchOrViewData}">
+				<f:facet name="header">
+					<h:outputLabel
+						value="#{empresaViewController.accion eq 'NEW' ? 'AGREGAR' : 'MODIFICAR' } EMPRESA"></h:outputLabel>
+				</f:facet>
+				<h:panelGrid id="pgEmpresa" columns="2">
+					<h:outputLabel for="nombre" value="Nombre: * "></h:outputLabel>
+					<p:inputText id="nombre" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{empresaViewController.empresa.nombre}"></p:inputText>
+					<h:outputLabel for="ruc" value="Ruc: * "></h:outputLabel>
+					<p:inputNumber id="ruc" required="true" maxlength="13" 
+						requiredMessage="Campo Obligatorio"
+						thousandSeparator="" decimalSeparator="." decimalPlaces="0"
+						value="#{empresaViewController.empresa.ruc}"></p:inputNumber>
+					<h:outputLabel for="telefono" value="Teléfono: * "></h:outputLabel>
+					<p:inputText id="telefono" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{empresaViewController.empresa.telefono}"></p:inputText>
+					<h:outputLabel for="direccion" value="Dirección: * "></h:outputLabel>
+					<p:inputTextarea id="direccion" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{empresaViewController.empresa.direccion}"></p:inputTextarea>
+
+
+				</h:panelGrid>
+			</p:panel>
+
+			<p:confirmDialog id="dlgEliminar" width="400" widgetVar="dlgEliminar"
+				message=" ¿ Desea eliminar el Empresa seleccionado ?"
+				header="Eliminar Empresa" appendTo="@(body)">
+				<p:commandButton value="Confirmar"
+					actionListener="#{empresaViewController.delete}"
+					oncomplete="PF('dlgEliminar').hide()" update="formtipoServicio"
+					process="@this" styleClass="ui-confirmdialog-yes"
+					icon="ui-icon-check" />
+				<p:commandButton value="Cancelar" type="button"
+					onclick="PF('dlgEliminar').hide()" styleClass="ui-confirmdialog-no"
+					icon="ui-icon-close" />
+			</p:confirmDialog>
+
+		</h:form>
+	</h:body>	
+	</ui:define>
+</ui:composition>

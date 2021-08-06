@@ -1,0 +1,168 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui">
+	<ui:define name="content">
+	<h:body onload="#{usuarioViewController.doInit()}">
+		<h:form id="formtipoServicio">
+			<p:growl id="messages" showDetail="true" />
+			<p:toolbar>
+				<p:toolbarGroup>
+					<p:commandButton title="Restaurar" icon="fa fa-refresh" value="Restaurar"
+						rendered="#{!usuarioViewController.pnlSearchOrViewData}" />
+					<p:commandButton title="Nuevo" icon="fa fa-file-o" value="Nuevo"
+						rendered="#{!usuarioViewController.pnlSearchOrViewData}"
+						actionListener="#{usuarioViewController.agregar}"
+						update="formtipoServicio" />
+					<p:commandButton icon="fa fa-save" title="Guardar" value="Guardar"
+						actionListener="#{usuarioViewController.save}"
+						update="formtipoServicio"
+						rendered="#{usuarioViewController.pnlSearchOrViewData and usuarioViewController.accion eq 'NEW'}"></p:commandButton>
+					<p:commandButton icon="fa fa-pencil-square-o" title="Modificar" value="Modificar"
+						actionListener="#{usuarioViewController.update}"
+						update="formtipoServicio"
+						rendered="#{usuarioViewController.pnlSearchOrViewData and usuarioViewController.accion eq 'EDIT'}"></p:commandButton>
+					<p:commandButton title="Regresar" icon="fa fa-reply" value="Regresar"
+						immediate="true"
+						rendered="#{usuarioViewController.pnlSearchOrViewData}"
+						actionListener="#{usuarioViewController.search}"
+						update="formtipoServicio" />
+				</p:toolbarGroup>
+			</p:toolbar>
+			<p:dataTable var="usuario" rowIndexVar="row"
+				rendered="#{!usuarioViewController.pnlSearchOrViewData}"
+				value="#{usuarioViewController.listUsuario}" rows="10"
+				widgetVar="wdtUsuario" id="dtUsuario"
+				emptyMessage="No se encontraron registros">
+				<f:facet name="header">
+					<h:outputLabel value="Usuario"></h:outputLabel>
+				</f:facet>
+				<p:column width="15" headerText="#" style="text-align:right;">
+					<h:outputLabel value="#{row + 1}" />
+				</p:column>
+				<p:column width="100" headerText="Acciones">
+					<p:commandButton icon="fa fa-pencil-square" title="Editar"
+						actionListener="#{usuarioViewController.editarUsuario(usuario)}"
+						update="formtipoServicio">					
+					</p:commandButton>
+
+					<p:commandButton icon="fa fa-trash" title="Eliminar"
+						oncomplete="PF('dlgEliminar').show()">
+						<f:setPropertyActionListener value="#{usuario}"
+							target="#{usuarioViewController.usuario}" />
+					</p:commandButton>
+				</p:column>
+				<p:column width="120" headerText="C&#243;digo"
+				filterBy="#{usuario.codUsuario}" filterMatchMode="exact"
+					style="text-align:right;">
+					<h:outputLabel value="#{usuario.codUsuario}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Identificación" filterBy="#{usuario.persona.identificacion}" filterMatchMode="exact">
+					<h:outputLabel value="#{usuario.persona.identificacion}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Apellido" filterBy="#{usuario.persona.apellido}" filterMatchMode="contains">
+					<h:outputLabel value="#{usuario.persona.apellido}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Nombre" filterBy="#{usuario.persona.nombre}" filterMatchMode="contains">
+					<h:outputLabel value="#{usuario.persona.nombre}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Teléfono" filterBy="#{usuario.persona.telefono}" filterMatchMode="contains">
+					<h:outputLabel value="#{usuario.persona.telefono}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Correo Electrónico" filterBy="#{usuario.persona.email}" filterMatchMode="contains">
+					<h:outputLabel value="#{usuario.persona.email}"></h:outputLabel>
+				</p:column>
+				<p:column headerText="Dirección" filterBy="#{usuario.persona.direccion}" filterMatchMode="contains">
+					<h:outputLabel value="#{usuario.persona.direccion}"></h:outputLabel>
+				</p:column>
+			</p:dataTable>
+
+
+
+			<p:panel rendered="#{usuarioViewController.pnlSearchOrViewData}">
+				<f:facet name="header">
+					<h:outputLabel
+						value="#{usuarioViewController.accion eq 'NEW' ? 'AGREGAR' : 'MODIFICAR' } USUARIO"></h:outputLabel>
+				</f:facet>
+				<p:tabView activeIndex="0">
+            <p:tab title="Información General">
+               <h:panelGrid id="pgPersona" columns="2">
+					<h:outputLabel for="tipoDocumento" value="Tipo Documento: * "></h:outputLabel>
+					<p:selectOneMenu id="tipoDocumento"
+						value="#{usuarioViewController.idTipoDocumentoSelected}">
+						<f:selectItems value="#{usuarioViewController.listTipoDocumento}"
+							var="dto" itemLabel="#{dto.descripcion}"
+							itemValue="#{dto.codTipoDocumento}"></f:selectItems>
+					</p:selectOneMenu>
+					<h:outputLabel for="identificacion" value="Identificación: * "></h:outputLabel>
+					<p:inputText id="identificacion" required="true" onkeypress="return validNumberKey(event);"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.identificacion}"></p:inputText>
+					<h:outputLabel for="apellido" value="Apellido: * "></h:outputLabel>
+					<p:inputText id="apellido" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.apellido}"></p:inputText>
+					<h:outputLabel for="nombre" value="Nombre: * "></h:outputLabel>
+					<p:inputText id="nombre" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.nombre}"></p:inputText>
+					<h:outputLabel for="email" value="Correo Electrónico: * "></h:outputLabel>
+					<p:inputText id="email" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.email}"></p:inputText>
+					<h:outputLabel for="telefono" value="Teléfono: * "></h:outputLabel>
+					<p:inputText id="telefono" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.telefono}"></p:inputText>
+					<h:outputLabel for="direccion" value="Dirección: * "></h:outputLabel>
+					<p:inputTextarea id="direccion" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.persona.direccion}"></p:inputTextarea>
+				</h:panelGrid>
+            </p:tab>
+            <p:tab title="Información Usuario">
+               <h:panelGrid id="pgUsuario" columns="2">
+					<h:outputLabel for="perfil" value="Perfil: * "></h:outputLabel>
+					<p:selectOneMenu id="perfil"
+						value="#{usuarioViewController.idPerfilSelected}">
+						<f:selectItems value="#{usuarioViewController.listPerfil}"
+							var="dto" itemLabel="#{dto.descripcion}"
+							itemValue="#{dto.codPerfil}"></f:selectItems>
+					</p:selectOneMenu>
+
+					<h:outputLabel for="username" value="Usuario: * "></h:outputLabel>
+					<p:inputText id="username" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.username}"></p:inputText>
+
+					<h:outputLabel for="password" value="Password: * "></h:outputLabel>
+					<p:inputText id="password" required="true"
+						requiredMessage="Campo Obligatorio"
+						value="#{usuarioViewController.usuario.password}"></p:inputText>
+				</h:panelGrid>
+            </p:tab>
+           
+        </p:tabView>
+			</p:panel>
+
+			<p:confirmDialog id="dlgEliminar" width="400" widgetVar="dlgEliminar"
+				message=" ¿ Desea eliminar el Usuario seleccionado ?"
+				header="Eliminar Usuario" appendTo="@(body)">
+				<p:commandButton value="Confirmar"
+					actionListener="#{usuarioViewController.delete}"
+					oncomplete="PF('dlgEliminar').hide()" update="formtipoServicio"
+					process="@this" styleClass="ui-confirmdialog-yes"
+					icon="ui-icon-check" />
+				<p:commandButton value="Cancelar" type="button"
+					onclick="PF('dlgEliminar').hide()" styleClass="ui-confirmdialog-no"
+					icon="ui-icon-close" />
+			</p:confirmDialog>
+
+		</h:form>
+		</h:body>
+	</ui:define>
+</ui:composition>

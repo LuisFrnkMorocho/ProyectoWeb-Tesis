@@ -1,0 +1,468 @@
+<?xml version='1.0' encoding='UTF-8' ?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<ui:composition template="/WEB-INF/template.xhtml"
+	xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:h="http://java.sun.com/jsf/html"
+	xmlns:f="http://java.sun.com/jsf/core"
+	xmlns:ui="http://java.sun.com/jsf/facelets"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:pe="http://primefaces.org/ui/extensions">
+	<ui:define name="content">
+		<h:body onload="#{ordenesTrabajoViewController.doInit()}">
+
+			<h:form id="formOrdenTrabajo">
+				<p:growl id="messages" showDetail="true" />
+				<p:toolbar>
+					<p:toolbarGroup>
+						<p:commandButton title="Restaurar" icon="fa fa-refresh"
+							value="Restaurar"
+							rendered="#{!ordenesTrabajoViewController.pnlSearchOrViewData}" />
+						<p:commandButton title="Nuevo" icon="fa fa-file-o" value="Nuevo"
+							rendered="#{!ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.administrador}"
+							actionListener="#{ordenesTrabajoViewController.agregar}"
+							update="formOrdenTrabajo" />
+						<p:commandButton icon="fa fa-save" title="Guardar" value="Guardar"
+							actionListener="#{ordenesTrabajoViewController.save}"
+							update="formOrdenTrabajo"
+							rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'NEW'}"></p:commandButton>
+						<p:commandButton icon="fa fa-pencil-square-o" title="Modificar"
+							actionListener="#{ordenesTrabajoViewController.update}"
+							update="formOrdenTrabajo" value="Modificar"
+							rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'EDIT' and ordenesTrabajoViewController.administrador and ordenesTrabajoViewController.ordenTrabajo.estado eq 'INGRESADO'}"></p:commandButton>
+						<p:commandButton icon="fa fa-cogs" title="Finalizar Revisión"
+							actionListener="#{ordenesTrabajoViewController.finalizaOrdenRevision}"
+							update="formOrdenTrabajo" value="Finalizar Revisión"
+							rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'EDIT' and ordenesTrabajoViewController.administrador and ordenesTrabajoViewController.ordenTrabajo.estado eq 'INGRESADO'}"></p:commandButton>
+						<p:commandButton icon="fa fa-cogs" title="Finalizar Entrega"
+							update="formDlgFinalizarEntregaOrden" value="Finalizar Entrega"
+							oncomplete="PF('dlgFinalizarEntregaOrden').show()"
+							rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'EDIT' and ordenesTrabajoViewController.administrador and ordenesTrabajoViewController.ordenTrabajo.estado eq 'REVISADO'}"></p:commandButton>
+						<p:commandButton title="Regresar" icon="fa fa-reply"
+							immediate="true" value="Regresar"
+							rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData}"
+							actionListener="#{ordenesTrabajoViewController.search}"
+							update="formOrdenTrabajo" />
+					</p:toolbarGroup>
+				</p:toolbar>
+				<div>
+					<p:panel
+						rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData}">
+						<f:facet name="header">
+							<i class="fa fa-filter"></i>
+							<h:outputLabel value="   Filtro"></h:outputLabel>
+						</f:facet>
+						<h:outputLabel for="txtIdentificacion" value="Identificación: * "></h:outputLabel>
+						<p:inputText id="txtIdentificacion"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							maxlength="13"
+							value="#{ordenesTrabajoViewController.identificacionSelected}">
+						</p:inputText>
+						<p:commandButton title="Buscar" icon="fa fa-search" value="Buscar"
+							actionListener="#{ordenesTrabajoViewController.buscarCliente}"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							update=":formOrdenTrabajo:pgPersona" />
+					</p:panel>
+				</div>
+
+				<p:dataTable var="ordenTrabajo" rowIndexVar="row"
+					rendered="#{!ordenesTrabajoViewController.pnlSearchOrViewData}"
+					value="#{ordenesTrabajoViewController.listOrdenTrabajo}" rows="10"
+					widgetVar="wdttipoServicio" id="dttipoServicio"
+					emptyMessage="No se encontraron registros">
+					<f:facet name="header">
+						<h:outputLabel value="Orden de Trabajo"></h:outputLabel>
+					</f:facet>
+					<p:column width="15" headerText="#" style="text-align:right;">
+						<h:outputLabel value="#{row + 1}" />
+					</p:column>
+					<p:column width="100" headerText="Acciones">
+						<p:commandButton icon="fa fa-pencil-square" title="Editar"
+							update="formOrdenTrabajo"
+							actionListener="#{ordenesTrabajoViewController.editarOrdenTrabajo(ordenTrabajo)}">
+
+						</p:commandButton>
+
+						<p:commandButton icon="fa fa-trash" title="Eliminar"
+							rendered="#{ordenTrabajo.estado eq 'INGRESADO' and ordenesTrabajoViewController.administrador}"
+							oncomplete="PF('dlgEliminar').show()">
+							<f:setPropertyActionListener value="#{ordenTrabajo}"
+								target="#{ordenesTrabajoViewController.ordenTrabajo}" />
+						</p:commandButton>
+					</p:column>
+					<p:column headerText="C&#243;digo"
+						filterBy="#{ordenTrabajo.codOrdenTrabajo}" filterMatchMode="exact"
+						style="text-align:right;">
+						<h:outputLabel value="#{ordenTrabajo.codOrdenTrabajo}"></h:outputLabel>
+					</p:column>
+					<p:column headerText="Estado" filterBy="#{ordenTrabajo.estado}"
+						filterMatchMode="contains" style="text-align:right;">
+						<h:outputLabel value="#{ordenTrabajo.estado}"></h:outputLabel>
+					</p:column>
+
+					<p:column headerText="Fecha Registro" style="text-align:right;">
+						<h:outputLabel value="#{ordenTrabajo.fechaRegistro}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</h:outputLabel>
+					</p:column>
+
+
+					<p:column headerText="Identificación"
+						filterBy="#{ordenTrabajo.cliente.persona.identificacion}"
+						filterMatchMode="exact">
+						<h:outputLabel
+							value="#{ordenTrabajo.cliente.persona.identificacion}"></h:outputLabel>
+					</p:column>
+
+					<p:column headerText="Apellido"
+						filterBy="#{ordenTrabajo.cliente.persona.apellido}"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{ordenTrabajo.cliente.persona.apellido}"></h:outputLabel>
+					</p:column>
+
+					<p:column headerText="Nombre"
+						filterBy="#{ordenTrabajo.cliente.persona.nombre}"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{ordenTrabajo.cliente.persona.nombre}"></h:outputLabel>
+					</p:column>
+
+					<p:column headerText="Teléfono"
+						filterBy="#{ordenTrabajo.cliente.persona.telefono}"
+						filterMatchMode="contains">
+						<h:outputLabel value="#{ordenTrabajo.cliente.persona.telefono}"></h:outputLabel>
+					</p:column>
+
+					<p:column headerText="Descripci&#243;n"
+						filterBy="#{ordenTrabajo.observacion}" filterMatchMode="contains">
+						<h:outputLabel value="#{ordenTrabajo.observacion}"></h:outputLabel>
+					</p:column>
+
+
+				</p:dataTable>
+
+				<p:panel
+					rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData}">
+					<f:facet name="header">
+						<h:outputLabel value="CLIENTE"></h:outputLabel>
+					</f:facet>
+					<h:panelGrid id="pgPersona" columns="6">
+						<p:outputLabel for="tipoDocumento" value="Tipo Documento: * "></p:outputLabel>
+						<p:selectOneMenu id="tipoDocumento"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.idTipoDocumentoSelected}">
+							<f:selectItems
+								value="#{ordenesTrabajoViewController.listTipoDocumento}"
+								var="dto" itemLabel="#{dto.descripcion}"
+								itemValue="#{dto.codTipoDocumento}"></f:selectItems>
+						</p:selectOneMenu>
+						<h:outputLabel for="identificacion" value="Identificación: * "></h:outputLabel>
+						<p:inputText id="identificacion"
+							onkeypress="return validNumberKey(event);" maxlength="20"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.identificacion}">
+						</p:inputText>
+						<h:outputLabel for="apellido" value="Apellido: * "></h:outputLabel>
+						<p:inputText id="apellido"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.apellido}"></p:inputText>
+						<h:outputLabel for="nombre" value="Nombre: * "></h:outputLabel>
+						<p:inputText id="nombre"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.nombre}"></p:inputText>
+						<h:outputLabel for="email" value="Correo Electrónico: * "></h:outputLabel>
+						<p:inputText id="email"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.email}"></p:inputText>
+						<h:outputLabel for="telefono" value="Teléfono: * "></h:outputLabel>
+						<p:inputText id="telefono"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.telefono}"></p:inputText>
+						<h:outputLabel for="direccion" value="Dirección: * "></h:outputLabel>
+						<p:inputTextarea id="direccion"
+							disabled="#{!ordenesTrabajoViewController.administrador || ordenesTrabajoViewController.ordenTrabajo.estado eq 'ENTREGADO'}"
+							value="#{ordenesTrabajoViewController.cliente.persona.direccion}"></p:inputTextarea>
+					</h:panelGrid>
+				</p:panel>
+
+				<p:panel
+					rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'EDIT'}">
+					<f:facet name="header">
+						<h:outputLabel value="ORDEN DE TRABAJO"></h:outputLabel>
+					</f:facet>
+
+					<h:panelGrid id="pgOrden" columns="6"
+						columnClasses="label, value, label,  label, value, label">
+						<h:outputLabel value="Nro Orden: "></h:outputLabel>
+						<p:inputText disabled="true"
+							value="#{ordenesTrabajoViewController.ordenTrabajo.codOrdenTrabajo}"></p:inputText>
+						<h:outputLabel value="Fecha Registro: "></h:outputLabel>
+						<h:outputText disabled="true"
+							value="#{ordenesTrabajoViewController.ordenTrabajo.fechaRegistro}">
+							<f:convertDateTime pattern="dd/MM/yyyy HH:mm:ss" />
+						</h:outputText>
+						<h:outputLabel value="Estado: "></h:outputLabel>
+						<p:inputText disabled="true"
+							value="#{ordenesTrabajoViewController.ordenTrabajo.estado}"></p:inputText>
+					</h:panelGrid>
+
+				</p:panel>
+
+				<p:panel
+					rendered="#{ordenesTrabajoViewController.pnlSearchOrViewData and ordenesTrabajoViewController.accion eq 'EDIT'}">
+					<f:facet name="header">
+						<h:outputLabel value="DETALLE ORDEN DE TRABAJO"></h:outputLabel>
+					</f:facet>
+					<p:toolbar rendered="#{ordenesTrabajoViewController.administrador}">
+						<p:toolbarGroup>
+							<p:commandButton
+								rendered="#{ordenesTrabajoViewController.ordenTrabajo.estado eq 'INGRESADO'}"
+								value="Agregar" icon="fa fa-plus"
+								actionListener="#{ordenesTrabajoViewController.agregarOrdenDetalle}"
+								styleClass="p-mr-2" title="Agregar" update="formOrdenDetalle"
+								oncomplete="PF('dlgOrdenDetalle').show()" />
+
+							<p:commandButton value="Enviar a Reparar"
+								rendered="#{ordenesTrabajoViewController.ordenTrabajo.estado eq 'REVISADO'}"
+								icon="fa fa-share-square-o"
+								actionListener="#{ordenesTrabajoViewController.reparacionOrdenDetalle}"
+								styleClass="p-mr-2" title="Enviar a Reparar"
+								update="dtOrdenTrabajoDetalle" />
+
+						</p:toolbarGroup>
+					</p:toolbar>
+					<p:dataTable var="ordenTrabajoDetalle" rowIndexVar="row"
+						value="#{ordenesTrabajoViewController.listEquipo}" rows="10"
+						widgetVar="wdtOrdenTrabajoDetalle" id="dtOrdenTrabajoDetalle"
+						selection="#{ordenesTrabajoViewController.listEquipoSelected}"
+						rowKey="#{ordenTrabajoDetalle.codEquipo}"
+						emptyMessage="No se encontraron registros"
+						disabledSelection="#{ordenTrabajoDetalle.ordenTrabajoDetalle.estado eq 'PORREPARAR' and ordenesTrabajoViewController.administrador}">
+
+						<p:column width="15" headerText="#" style="text-align:right;">
+							<h:outputLabel value="#{row + 1}" />
+						</p:column>
+						<p:column selectionMode="multiple"
+							style="width:16px;text-align:center"
+							rendered="#{ordenesTrabajoViewController.administrador and ordenesTrabajoViewController.ordenTrabajo.estado eq 'REVISADO'}" />
+						<p:column width="100" headerText="Acciones"
+							rendered="#{ordenesTrabajoViewController.administrador and ordenesTrabajoViewController.ordenTrabajo.estado eq 'INGRESADO'}">
+							<p:commandButton icon="fa fa-pencil-square" title="Editar"
+								update="formOrdenDetalle"
+								oncomplete="PF('dlgOrdenDetalle').show()"
+								actionListener="#{ordenesTrabajoViewController.editarOrdenDetalle(ordenTrabajoDetalle)}">
+
+							</p:commandButton>
+							<p:commandButton icon="fa fa-trash" title="Eliminar"
+								oncomplete="PF('dlgEliminarDetalle').show()"
+								actionListener="#{ordenesTrabajoViewController.prepararEliminarOrdenDetalle(ordenTrabajoDetalle)}">
+							</p:commandButton>
+
+						</p:column>
+						<p:column width="100" headerText="Diagnóstico">
+							<p:commandButton icon="fa fa-user-md" title="Diagnosticar"
+								disabled="#{ordenTrabajoDetalle.ordenTrabajoDetalle.estado eq 'INGRESADO'}"
+								update="formDlgDiagnostico"
+								oncomplete="PF('dlgDiagnostico').show()"
+								actionListener="#{ordenesTrabajoViewController.ingresarDiagnostico(ordenTrabajoDetalle)}">
+							</p:commandButton>
+						</p:column>
+						<p:column width="100" headerText="Imprimir">
+							<p:commandButton icon="fa fa-print" title="Imprimir"
+								disabled="#{ordenTrabajoDetalle.ordenTrabajoDetalle.estado eq 'INGRESADO'}"
+								update="pnlDocumentViewer"
+								oncomplete="PF('dlgImprimirOrdenDetalle').show()"
+								actionListener="#{ordenesTrabajoViewController.generarReporte(ordenTrabajoDetalle)}">
+							</p:commandButton>
+						</p:column>
+						<p:column width="120" headerText="C&#243;digo"
+							style="text-align:right;">
+							<h:outputLabel
+								value="#{ordenTrabajoDetalle.ordenTrabajoDetalle.codOrdenTrabajoDetalle}"></h:outputLabel>
+						</p:column>
+						<p:column headerText="Característica">
+							<h:outputLabel value="#{ordenTrabajoDetalle.caracteristica}"></h:outputLabel>
+						</p:column>
+						<p:column headerText="Marca">
+							<h:outputLabel value="#{ordenTrabajoDetalle.marca}"></h:outputLabel>
+						</p:column>
+						<p:column headerText="Serial">
+							<h:outputLabel value="#{ordenTrabajoDetalle.serial}"></h:outputLabel>
+						</p:column>
+
+						<p:column headerText="Estado">
+							<h:outputLabel
+								value="#{ordenTrabajoDetalle.ordenTrabajoDetalle.estado}"></h:outputLabel>
+						</p:column>
+					</p:dataTable>
+				</p:panel>
+
+				<p:confirmDialog id="dlgEliminar" width="400"
+					widgetVar="dlgEliminar"
+					message=" ¿ Desea eliminar la Orden de Trabajo seleccionado ?"
+					header="Eliminar Orden de Trabajo" appendTo="@(body)">
+					<p:commandButton value="Confirmar"
+						actionListener="#{ordenesTrabajoViewController.delete}"
+						oncomplete="PF('dlgEliminar').hide()" update="formOrdenTrabajo"
+						process="@this" styleClass="ui-confirmdialog-yes"
+						icon="ui-icon-check" />
+					<p:commandButton value="Cancelar" type="button"
+						onclick="PF('dlgEliminar').hide()"
+						styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+				</p:confirmDialog>
+
+
+				<p:confirmDialog id="dlgEliminarDetalle" width="400"
+					widgetVar="dlgEliminarDetalle"
+					message=" ¿ Desea eliminar el Detalle de la Orden de Trabajo seleccionado ?"
+					header="Detalle de la Orden de Trabajo" appendTo="@(body)">
+					<p:commandButton value="Confirmar"
+						actionListener="#{ordenesTrabajoViewController.eliminarOrdenDetalle}"
+						oncomplete="PF('dlgEliminar').hide()" update="formOrdenTrabajo"
+						process="@this" styleClass="ui-confirmdialog-yes"
+						icon="ui-icon-check" />
+					<p:commandButton value="Cancelar" type="button"
+						onclick="PF('dlgEliminar').hide()"
+						styleClass="ui-confirmdialog-no" icon="ui-icon-close" />
+				</p:confirmDialog>
+
+			</h:form>
+
+			<p:dialog header="Orden de Trabajo Detalle"
+				widgetVar="dlgOrdenDetalle" minHeight="40" width="500"
+				showEffect="fade">
+				<h:form id="formOrdenDetalle">
+					<p:panel>
+
+						<p:fieldset legend="Equipo">
+							<h:panelGrid id="pgOrdenDetalle" columns="2">
+								<h:outputLabel for="caracteristica" value="Característica: * "></h:outputLabel>
+								<p:inputTextarea id="caracteristica" required="true" rows="2"
+									cols="40" requiredMessage="Campo Obligatorio"
+									value="#{ordenesTrabajoViewController.equipo.caracteristica}"></p:inputTextarea>
+								<h:outputLabel for="marca" value="Marca: * "></h:outputLabel>
+								<p:inputTextarea id="marca" required="true" rows="1" cols="40"
+									requiredMessage="Campo Obligatorio"
+									value="#{ordenesTrabajoViewController.equipo.marca}"></p:inputTextarea>
+								<h:outputLabel for="modelo" value="Modelo: * "></h:outputLabel>
+								<p:inputTextarea id="modelo" required="true" rows="1" cols="40"
+									requiredMessage="Campo Obligatorio"
+									value="#{ordenesTrabajoViewController.equipo.modelo}"></p:inputTextarea>
+								<h:outputLabel for="serial" value="Serial: * "></h:outputLabel>
+								<p:inputTextarea id="serial" required="true" rows="1" cols="40"
+									requiredMessage="Campo Obligatorio"
+									value="#{ordenesTrabajoViewController.equipo.serial}"></p:inputTextarea>
+							</h:panelGrid>
+						</p:fieldset>
+						<br></br>
+						<p:fieldset legend="Motivo Mantenimiento">
+							<h:panelGrid id="pgMantenimiento" columns="2">
+								<h:outputLabel for="tipoServicio" value="Tipo Servicio: * "></h:outputLabel>
+								<p:selectOneMenu id="tipoServicio"
+									value="#{ordenesTrabajoViewController.idTipoServicioSelected}">
+									<f:selectItems
+										value="#{ordenesTrabajoViewController.listTipoServicio}"
+										var="dto" itemLabel="#{dto.descripcion}"
+										itemValue="#{dto.codTipoServicio}"></f:selectItems>
+								</p:selectOneMenu>
+								<h:outputLabel for="motivoMantenimiento" value="Observación: * "></h:outputLabel>
+								<p:inputTextarea id="motivoMantenimiento" required="true"
+									rows="2" cols="40" requiredMessage="Campo Obligatorio"
+									value="#{ordenesTrabajoViewController.equipo.ordenTrabajoDetalle.motivoMantenimiento}"></p:inputTextarea>
+							</h:panelGrid>
+						</p:fieldset>
+						<br></br>
+						<p:fieldset legend="Responsable">
+							<h:panelGrid id="pgResponsable" columns="2">
+								<h:outputLabel for="usuario" value="Asignar Técnico: "></h:outputLabel>
+								<p:selectOneMenu id="usuario"
+									value="#{ordenesTrabajoViewController.idUsuarioSelected}">
+									<f:selectItem itemLabel="Seleccione"></f:selectItem>
+									<f:selectItems
+										value="#{ordenesTrabajoViewController.listUsuario}" var="dto"
+										itemLabel="#{dto.persona.apellido} #{dto.persona.nombre}"
+										itemValue="#{dto.codUsuario}"></f:selectItems>
+								</p:selectOneMenu>
+							</h:panelGrid>
+						</p:fieldset>
+						<f:facet name="footer">
+							<p:commandButton value="Guardar" icon="fa fa-save"
+								oncomplete="if (args &amp;&amp; !args.validationFailed) PF('dlgOrdenDetalle').hide()"
+								actionListener="#{ordenesTrabajoViewController.saveOrdenDetalle}"
+								update="@form, formOrdenTrabajo:dtOrdenTrabajoDetalle"
+								process="@this, formOrdenDetalle" />
+							<p:commandButton value="Cancelar" icon="ui-icon-close"
+								oncomplete="PF('dlgOrdenDetalle').hide()" immediate="true" />
+						</f:facet>
+					</p:panel>
+				</h:form>
+			</p:dialog>
+			<h:form id="formDlgDiagnostico">
+				<p:dialog header="Diagnóstico" widgetVar="dlgDiagnostico"
+					minHeight="40" width="450" showEffect="fade">
+					<h:panelGrid id="pgDiagnostico" columns="2">
+						<h:outputLabel for="observacion" value="Observación: * "></h:outputLabel>
+						<p:inputTextarea id="observacion" required="true" rows="2"
+							cols="40" disabled="true" requiredMessage="Campo Obligatorio"
+							value="#{ordenesTrabajoViewController.diagnostico.observacion}"></p:inputTextarea>
+						<h:outputLabel for="detalleAveria" value="Detalle Averia: * "></h:outputLabel>
+						<p:inputTextarea id="detalleAveria" required="true" rows="2"
+							cols="40" disabled="#{ordenesTrabajoViewController.finalizado}"
+							requiredMessage="Campo Obligatorio"
+							value="#{ordenesTrabajoViewController.diagnostico.detalleAveria}"></p:inputTextarea>
+						<h:outputLabel for="detalleReemplazo" value="Solución: * "></h:outputLabel>
+						<p:inputTextarea id="detalleReemplazo" required="true" rows="2"
+							cols="40" requiredMessage="Campo Obligatorio"
+							disabled="#{!ordenesTrabajoViewController.ordenDetalleFinalizado}"
+							value="#{ordenesTrabajoViewController.diagnostico.detalleReemplazo}"></p:inputTextarea>
+						<f:facet name="footer">
+							<p:commandButton value="Finalizar Revisión" icon="fa fa-save"
+								oncomplete="PF('dlgDiagnostico').hide()"
+								actionListener="#{ordenesTrabajoViewController.saveDiagnostico}"
+								disabled="#{ordenesTrabajoViewController.finalizado}"
+								update="@form, formOrdenTrabajo:dtOrdenTrabajoDetalle"
+								process="@this, formDlgDiagnostico:pgDiagnostico" />
+							<p:commandButton value="Finalizar Entrega" icon="fa fa-save"
+								oncomplete="PF('dlgDiagnostico').hide()"
+								disabled="#{!ordenesTrabajoViewController.ordenDetalleFinalizado}"
+								actionListener="#{ordenesTrabajoViewController.diagnosticoReparacion}"
+								update="@form, formOrdenTrabajo:dtOrdenTrabajoDetalle"
+								process="@this, formDlgDiagnostico:pgDiagnostico" />
+							<p:commandButton value="Cancelar" icon="ui-icon-close"
+								oncomplete="PF('dlgDiagnostico').hide()" immediate="true" />
+						</f:facet>
+					</h:panelGrid>
+				</p:dialog>
+			</h:form>
+
+			<p:dialog header="Diagnóstico" widgetVar="dlgImprimirOrdenDetalle"
+				minHeight="40" width="750" showEffect="fade">
+				<p:panel id="pnlDocumentViewer">
+					<pe:documentViewer height="450" id="documentViewer"
+						value="#{ordenesTrabajoViewController.content}"
+						download="ReporteOrdenTrabajo.pdf"></pe:documentViewer>
+				</p:panel>
+			</p:dialog>
+
+            <h:form id="formDlgFinalizarEntregaOrden">
+			<p:dialog header="Finalizar Entrega Orden"
+				widgetVar="dlgFinalizarEntregaOrden" minHeight="40" width="450"
+				showEffect="fade">
+				<h:panelGrid id="pgFinalizarEntregaOrden" columns="2">
+					<h:outputLabel value="Observación: "></h:outputLabel>
+					<p:inputTextarea rows="4" cols="40" 
+						value="#{ordenesTrabajoViewController.ordenTrabajo.observacion}"></p:inputTextarea>
+					<f:facet name="footer">
+						<p:commandButton icon="fa fa-check-circle" title="Confirmar"
+							actionListener="#{ordenesTrabajoViewController.finalizarEntregaOrden}"
+							update="@form, formOrdenTrabajo"
+							process="@this, formDlgFinalizarEntregaOrden:pgFinalizarEntregaOrden" value="Confirmar"
+							oncomplete="PF('dlgFinalizarEntregaOrden').hide()"></p:commandButton>
+						<p:commandButton value="Cancelar" icon="ui-icon-close"
+							oncomplete="PF('dlgFinalizarEntregaOrden').hide()"
+							immediate="true" />
+					</f:facet>
+				</h:panelGrid>
+			</p:dialog>
+  </h:form>
+		</h:body>
+	</ui:define>
+</ui:composition>
